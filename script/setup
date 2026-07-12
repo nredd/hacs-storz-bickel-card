@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# script/setup: Install locked dependencies with Bun
+#
+# Usage:
+#   ./script/setup
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR/.."
+
+# shellcheck source=script/.lib/output.sh
+source "$SCRIPT_DIR/.lib/output.sh"
+
+require_bun
+
+log_header "Installing dependencies"
+bun install --frozen-lockfile
+
+log_success "Dependencies installed"

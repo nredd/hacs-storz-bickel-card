@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# script/type-check: Type-check the TypeScript with tsc
+#
+# Bun transpiles but does not type-check; strict tsc --noEmit is this
+# project's equivalent of Astral ty on the Python side.
+#
+# Usage:
+#   ./script/type-check
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR/.."
+
+# shellcheck source=script/.lib/output.sh
+source "$SCRIPT_DIR/.lib/output.sh"
+
+require_bun
+
+log_header "Type-checking TypeScript with tsc"
+bun run check
+
+log_success "Type check completed"

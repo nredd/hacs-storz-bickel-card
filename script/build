@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# script/build: Build the production card bundle
+#
+# Bundles src/storz-bickel-card.ts into dist/storz-bickel-card.js, the
+# artifact HACS/GitHub Releases ships to users.
+#
+# Usage:
+#   ./script/build
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR/.."
+
+# shellcheck source=script/.lib/output.sh
+source "$SCRIPT_DIR/.lib/output.sh"
+
+require_bun
+
+log_header "Building the card bundle"
+bun run build
+
+log_success "Bundle written to dist/storz-bickel-card.js"

@@ -7,10 +7,21 @@
   "image": "ghcr.io/custom-cards/custom-card-devcontainer:latest",
   "remoteUser": "vscode",
 
+  // Bun feature, pinned to match .bun-version. Load-bearing here (this repo's
+  // entire toolchain is Bun + Biome), unlike the sibling hacs-storz-bickel
+  // integration repo, where the same feature block is optional (Python-first).
+  "features": {
+    "ghcr.io/shyim/devcontainers-features/bun:0": {
+      "version": "1.3.14"
+    }
+  },
+
   // Set working directory
   "workspaceFolder": "/workspaces/test",
-  
-  // Mount project to workspace, dist to Lovelace plugins, and config directory for Home Assistant
+
+  // Mount project to workspace, dist to Lovelace plugins (fallback path
+  // alongside LOVELACE_REMOTE_FILES below), and config directory for Home
+  // Assistant
   "mounts": [
     "source=${localWorkspaceFolder},target=/workspaces/test,type=bind",
     "source=${localWorkspaceFolder}/dist,target=/config/www/workspace,type=bind",
@@ -28,16 +39,17 @@
 
   // Container environment variables for Home Assistant setup
   "containerEnv": {
-    "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
     "DEVCONTAINER": "1",
     "HASS_USERNAME": "dev",
     "HASS_PASSWORD": "dev",
-    "LOVELACE_REMOTE_FILES": "http://localhost:5000/boilerplate-card.js"
+    "LOVELACE_REMOTE_FILES": "http://localhost:5000/storz-bickel-card.js"
   },
 
   // Setup Home Assistant and install dependencies
-  "postCreateCommand": "container setup && corepack enable && yarn install",
-  "postStartCommand": "container launch & yarn start & wait",
+  "postCreateCommand": "container setup && bun install --frozen-lockfile",
+  // Watch-build and static server run as two independent backgrounded
+  // processes alongside the Home Assistant launch.
+  "postStartCommand": "container launch & bun run dev & bun run serve & wait",
 
   // VS Code extensions for development
   "customizations": {
@@ -46,22 +58,20 @@
         "github.vscode-github-actions",
         "github.vscode-pull-request-github",
         "bierner.lit-html",
-        "redhat.vscode-yaml", 
-        "esbenp.prettier-vscode"
+        "redhat.vscode-yaml",
+        "biomejs.biome"
       ],
       "settings": {
         "typescript.enablePromptUseWorkspaceTsdk": true,
         "[typescript]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.defaultFormatter": "biomejs.biome",
           "editor.formatOnSave": true,
           "editor.codeActionsOnSave": {
-            "source.fixAll.eslint": "explicit"
+            "source.fixAll.biome": "explicit"
           }
         },
         "typescript.tsdk": "node_modules/typescript/lib",
-        "typescript.tsserver.pluginPaths": [
-          "node_modules/typescript/lib"
-        ],
+        "typescript.tsserver.pluginPaths": ["node_modules/typescript/lib"],
         "files.eol": "\n",
         "task.allowAutomaticTasks": "on"
       }

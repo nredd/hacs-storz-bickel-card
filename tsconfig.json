@@ -1,20 +1,19 @@
 {
   "compilerOptions": {
-    "target": "es2022",
-    "module": "esnext",
+    "target": "ES2021",
+    "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": [
-      "es2022",
-      "dom",
-      "dom.iterable"
-    ],
-    "noEmit": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
+    "lib": ["ES2021", "DOM", "DOM.Iterable"],
     "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
     "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "experimentalDecorators": true
-  }
+    "noEmit": true,
+    "types": ["bun"]
+  },
+  "include": ["src", "test"]
 }

@@ -1,47 +1,63 @@
-# Boilerplate Card
+# Storz & Bickel Card
 
-A community-driven boilerplate of best practices for Home Assistant Lovelace custom cards.
+A custom Lovelace dashboard card for the
+[`hacs-storz-bickel`](https://github.com/nredd/hacs-storz-bickel) Home Assistant integration.
 
 [![GitHub Release][releases-shield]][releases]
-[![License][license-shield]](LICENSE.md)
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
+[![License][license-shield]](LICENSE)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
 [![GitHub Activity][commits-shield]][commits]
+
+---
+
+> **This is a separate repo, companion to
+> [`nredd/hacs-storz-bickel`](https://github.com/nredd/hacs-storz-bickel).** The integration no
+> longer bundles or auto-serves this card — install both repos through HACS: the integration
+> (category: _Integration_) for the entities and BLE connection, and this repo (category:
+> _plugin_/Lovelace) for the dashboard card. Releases, versioning, and CI are fully independent
+> between the two.
 
 ---
 
 ## Overview
 
-This project is a fully-featured starting point for building your own custom Lovelace card. It is built on modern tooling (Lit 3, TypeScript 5, Rollup 4) and demonstrates real-world patterns used in production HA custom cards:
+`custom:storz-bickel-card` is a two-column dashboard card for Storz & Bickel vaporizers (Volcano,
+Venty, Crafty): a dual current/target temperature readout with a °F/°C toggle, a rotating-knob
+thermostat dial (drag it, or use the −/+ stepper), preset chips, and HEAT/AIR toggle buttons on
+the left; a live session timer with today's session count, a temperature history chart, a
+sessions-per-day chart, and a device-info panel (runtime, firmware, and dropdowns for
+auto-shutoff, pump failsafe, pump cooldown, and temperature step) on the right. It reflows to a
+single column in narrow dashboard slots.
 
-- Visual editor with collapsible accordion sections
-- Multiple entity support
-- Conditional card visibility based on entity states
-- Custom attribute display with label and unit overrides
-- Multiple layout modes (vertical, horizontal) and display modes (card, badge)
-- Comprehensive tap / hold / double-tap action support with repeat and haptic feedback
-- Skeleton loading state while `hass` initialises
-- Responsive design and theme-aware CSS custom properties
+The card adapts to the configured device: the AIR toggle appears only on the Volcano, the battery
+chip only on portables, and boost/vibration rows only where supported. Entity lookups go through
+the registry, so renaming entities never breaks the card.
 
 ---
+
+## Prerequisites
+
+- The [`hacs-storz-bickel`](https://github.com/nredd/hacs-storz-bickel) integration installed and
+  configured, with a Storz & Bickel device set up (Volcano, Venty, or Crafty).
+- A modern Chromium/Firefox/Safari-based browser for the Lovelace dashboard.
 
 ## Installation
 
 ### HACS (recommended)
 
-1. Open HACS in your Home Assistant instance.
-2. Go to **Frontend** → **+ Explore & Download Repositories**.
-3. Search for **Boilerplate Card** and click **Download**.
-4. Refresh your browser.
+1. Add this repository as a custom repository in HACS (category: _Lovelace_ / plugin).
+2. Install **Storz & Bickel Card**.
+3. Refresh your browser (hard reload if the card doesn't appear immediately).
 
 ### Manual
 
-1. Download `boilerplate-card.js` from the [latest release][releases].
-2. Copy it to `<config>/www/boilerplate-card.js`.
+1. Download `storz-bickel-card.js` from the [latest release][releases].
+2. Copy it to `<config>/www/storz-bickel-card.js`.
 3. Add a resource entry in your dashboard settings:
 
 ```yaml
 resources:
-  - url: /local/boilerplate-card.js
+  - url: /local/storz-bickel-card.js
     type: module
 ```
 
@@ -49,275 +65,90 @@ resources:
 
 ## Configuration
 
-### Minimal example
+Open any dashboard, **Add card**, and search for **Storz & Bickel Card**. The visual editor lets
+you pick the device and preset temperatures; the equivalent YAML is:
 
 ```yaml
-type: custom:boilerplate-card
-entity: light.living_room
+type: custom:storz-bickel-card
+device: <device_id>        # pick via the visual editor
+presets: [175, 185, 195]   # optional preset temperature chips
+name: Volcano               # optional title override
 ```
 
-### Full example
+| Name       | Type    | Required     | Description                                | Default              |
+| ---------- | ------- | ------------ | ------------------------------------------- | --------------------- |
+| `type`     | string  | **Required** | `custom:storz-bickel-card`                  |                        |
+| `device`   | string  | **Required** | Device registry id of the Storz & Bickel device | `none` (editor-only) |
+| `presets`  | number[] | **Optional** | Preset temperature chips                   | `none`                 |
+| `name`     | string  | **Optional** | Card title override                        | Device name            |
 
-```yaml
-type: custom:boilerplate-card
-entity: light.living_room
-name: Living Room
-icon: mdi:ceiling-light
-layout: vertical
-display_mode: card
-card_style: default
-accent_color: [255, 152, 0]
-attribute_limit: 3
-show_timestamps: true
-tap_action:
-  action: toggle
-hold_action:
-  action: more-info
-double_tap_action:
-  action: navigate
-  navigation_path: /lovelace/lights
-```
-
----
-
-## Options
-
-### Core
-
-| Name           | Type    | Required     | Description                                      | Default           |
-| -------------- | ------- | ------------ | ------------------------------------------------ | ----------------- |
-| `type`         | string  | **Required** | `custom:boilerplate-card`                        |                   |
-| `entity`       | string  | **Optional** | Primary HA entity ID                             | `none`            |
-| `name`         | string  | **Optional** | Card title override                              | Entity friendly name |
-| `icon`         | string  | **Optional** | MDI icon override (e.g. `mdi:lightbulb`)         | Domain default    |
-| `area`         | string  | **Optional** | HA area to associate with the card               | `none`            |
-| `show_error`   | boolean | **Optional** | Render the error card template (for testing)     | `false`           |
-| `show_warning` | boolean | **Optional** | Render the warning banner template (for testing) | `false`           |
-
-### Actions
-
-| Name                | Type   | Required     | Description                     | Default             |
-| ------------------- | ------ | ------------ | ------------------------------- | ------------------- |
-| `tap_action`        | object | **Optional** | Action on single tap            | `action: more-info` |
-| `hold_action`       | object | **Optional** | Action on 500 ms hold           | `action: none`      |
-| `double_tap_action` | object | **Optional** | Action on double tap            | `action: none`      |
-
-#### Action object
-
-| Name              | Type   | Required     | Description                                                                             | Default     |
-| ----------------- | ------ | ------------ | --------------------------------------------------------------------------------------- | ----------- |
-| `action`          | string | **Required** | `more-info` `toggle` `navigate` `url` `call-service` `fire-dom-event` `none`           | `more-info` |
-| `navigation_path` | string | **Optional** | Path for `navigate` (e.g. `/lovelace/0/`)                                              | `none`      |
-| `url_path`        | string | **Optional** | URL for `url` action — opens in a new tab                                               | `none`      |
-| `service`         | string | **Optional** | Service for `call-service` (e.g. `light.turn_on`)                                      | `none`      |
-| `service_data`    | object | **Optional** | Service data payload for `call-service`                                                 | `none`      |
-| `haptic`          | string | **Optional** | Haptic feedback: `success` `warning` `failure` `light` `medium` `heavy` `selection`    | `none`      |
-| `repeat`          | number | **Optional** | Repeat interval in ms while held (`hold_action` only)                                  | `none`      |
-| `repeat_limit`    | number | **Optional** | Maximum number of repeats (`hold_action` only)                                          | `none`      |
-
-### Appearance
-
-| Name           | Type     | Required     | Description                                                              | Default              |
-| -------------- | -------- | ------------ | ------------------------------------------------------------------------ | -------------------- |
-| `layout`       | string   | **Optional** | `vertical` (stacked) or `horizontal` (icon + info + actions in one row) | `vertical`           |
-| `display_mode` | string   | **Optional** | `card` (full ha-card) or `badge` (compact inline chip)                  | `card`               |
-| `card_style`   | string   | **Optional** | `default` `compact` `detailed` `minimal`                                | `default`            |
-| `accent_color` | [r, g, b] | **Optional** | RGB accent color applied via `--card-accent-color`                     | Theme primary color  |
-
-#### Card styles
-
-| Value      | Effect                                             |
-| ---------- | -------------------------------------------------- |
-| `default`  | Standard padding and font sizes                    |
-| `compact`  | Reduced padding and smaller text                   |
-| `detailed` | Enlarged text, bigger icon, extra padding          |
-| `minimal`  | Entity row only — attributes and timestamps hidden |
-
-### Display
-
-| Name              | Type    | Required     | Description                                         | Default |
-| ----------------- | ------- | ------------ | --------------------------------------------------- | ------- |
-| `attribute_limit` | number  | **Optional** | Maximum number of attributes to display (`0` = none). Shown as a slider (0–10) in the visual editor. | `3`     |
-| `show_timestamps` | boolean | **Optional** | Show last changed / last updated timestamps         | `true`  |
+> **Reconnects on pump/step changes.** The pump failsafe, pump cooldown, and temperature-step
+> dropdowns in the device-info panel configure integration behavior (not the physical device), so
+> changing one reloads the integration's config entry — a brief BLE reconnect, the same as
+> changing them via the integration's own options flow.
 
 ---
 
 ## Developer Guide
 
-### Prerequisites
-
-| Tool    | Minimum version | Notes                               |
-| ------- | --------------- | ----------------------------------- |
-| Node.js | 24              | Required by `custom-card-helpers@2` |
-| Yarn    | 4               | Managed via Corepack                |
-
-TypeScript, Rollup, ESLint, and all other build tools are installed locally via `yarn install` — no global installs needed.
+This project uses [Bun](https://bun.sh) for install/build/test and [Biome](https://biomejs.dev)
+for lint/format — the TypeScript analogues of `uv`/`ruff` on the Python side. Zero runtime
+dependencies beyond [Lit](https://lit.dev).
 
 ### Quick start — devcontainer (recommended)
 
-The devcontainer gives you a full HA development environment in one click with no local setup required.
+The devcontainer gives you a full HA development environment in one click with no local setup
+required.
 
 1. Open the project in VS Code.
 2. When prompted, click **Reopen in Container** (or run **Dev Containers: Rebuild Container**).
-3. A local Home Assistant instance starts automatically at `http://localhost:8123`.
-4. Log in with `dev` / `dev`.
-5. The built card is served from the container and hot-reloads on every save (`yarn start` is launched automatically).
+3. A local Home Assistant instance starts automatically at `http://localhost:8123` (`dev`/`dev`).
+4. The card auto-loads via `LOVELACE_REMOTE_FILES` and hot-reloads on every save (`bun run dev` +
+   `bun run serve` launch automatically).
 
-**Requires:** [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension.
+**Requires:** [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+extension. See [`.devcontainer/README.md`](.devcontainer/README.md) for details.
 
 ### Quick start — local
 
 ```bash
-# 1. Clone or use the GitHub "Use this template" button
-git clone https://github.com/custom-cards/boilerplate-card.git my-card
-cd my-card
+git clone https://github.com/nredd/hacs-storz-bickel-card.git
+cd hacs-storz-bickel-card
 
-# 2. Install dependencies
-yarn install
-
-# 3. Verify the build works
-yarn build
-
-# 4. Start the development watcher
-yarn start
+bun install --frozen-lockfile   # install locked dependencies
+bun run build                    # verify the build works
+bun run dev                      # start the watch-mode build
 ```
 
-Then add your local file as a Lovelace resource:
-
-```yaml
-resources:
-  - url: /local/boilerplate-card.js
-    type: module
-```
-
-Copy or symlink `dist/boilerplate-card.js` into your HA `www/` folder, or use the devcontainer where this is handled automatically.
+Then add your local `dist/storz-bickel-card.js` as a Lovelace resource (see Manual installation
+above), or use the devcontainer where this is handled automatically.
 
 ### Available scripts
 
-| Command          | Description                                             |
-| ---------------- | ------------------------------------------------------- |
-| `yarn build`     | Lint + production bundle (minified, ES2022 output)      |
-| `yarn rollup`    | Production bundle only (skips lint)                     |
-| `yarn start`     | Development watcher with hot reload (`rollup --watch`)  |
-| `yarn lint`      | ESLint across all `src/` files                          |
+| Command          | Description                                          |
+| ---------------- | ----------------------------------------------------- |
+| `bun run build`  | Production bundle (minified, ES module)                |
+| `bun run dev`    | Watch-mode build with hot reload                        |
+| `bun run serve`  | Static server on port 5000 (pair with `dev`)             |
+| `bun run lint`   | Biome lint + format check (CI mode)                       |
+| `bun run check`  | `tsc --noEmit`                                            |
+| `bun test`       | `bun test --coverage`                                      |
+| `script/check`   | Full CI gate: lint-check + type-check + test               |
 
-### Project structure
-
-```
-src/
-├── boilerplate-card.ts          # Main card element — LitElement subclass
-├── editor.ts                    # Visual editor — implements LovelaceCardEditor
-├── types.ts                     # TypeScript interfaces for all config fields
-├── const.ts                     # CARD_VERSION constant
-├── action-handler-directive.ts  # Lit directive: tap / hold / double-tap gestures
-└── localize/
-    ├── localize.ts              # i18n helper
-    └── languages/
-        ├── en.json              # English strings
-        └── nb.json              # Norwegian strings
-dist/
-└── boilerplate-card.js          # Build output — serve this to HA
-```
-
-### Adapting the boilerplate for your own card
-
-Search the codebase for `TODO` — every required change is marked. The key steps in order:
-
-1. **Rename the element** — change `boilerplate-card` everywhere: the `@customElement` decorator, the `customCards.push` entry, the editor tag name in `getConfigElement`, and your YAML `type:` field.
-2. **Define config fields** — add your options to `BoilerplateCardConfig` in `types.ts`.
-3. **Validate and set defaults** — update `setConfig()` in `boilerplate-card.ts`. Throw for missing required fields; spread sensible defaults for optional ones.
-4. **Update `getStubConfig`** — return a minimal valid config so the card picker renders something immediately without the editor.
-5. **Build your render** — replace `_renderContent()` and `_renderAttributes()` with your domain-specific templates.
-6. **Update the visual editor** — add your config fields to the relevant accordion section in `editor.ts`. Use `ha-selector` for type-safe inputs that match HA's UI conventions.
-7. **Add user-facing strings** — put labels and messages in `src/localize/languages/en.json` and reference them with `localize('key')`.
-
-### Toolchain summary
-
-| Tool                        | Version | Role                                                       |
-| --------------------------- | ------- | ---------------------------------------------------------- |
-| Lit                         | 3.2     | Web components framework                                   |
-| TypeScript                  | 5.6     | Type checking and compilation                              |
-| Rollup                      | 4       | Bundler — single `.js` output with tree-shaking            |
-| `@rollup/plugin-typescript` | 11      | TypeScript integration                                     |
-| `@rollup/plugin-terser`     | 0.4     | Minifier                                                   |
-| ESLint                      | 8       | Linting with TypeScript and Prettier integration           |
-
-> **Important:** Rollup and Terser are both configured for ES2022 output (`ecma: 2022`, `target: 'ES2022'`). Do **not** lower these targets. Lit 3 uses native ES6 `class` syntax and the `extends` keyword; downgrading to ES5 causes a runtime `TypeError: Class constructor cannot be invoked without 'new'`.
-
-### Action handler directive
-
-`action-handler-directive.ts` is a Lit directive that attaches gesture recognisers to any element. Wire it up with the `actionHandler()` function and listen for the `@action` event:
-
-```typescript
-import { actionHandler } from './action-handler-directive';
-import { handleAction, ActionHandlerEvent } from 'custom-card-helpers';
-
-// In your render():
-html`
-  <div
-    ${actionHandler({ hasHold: true, hasDoubleClick: true })}
-    @action=${this._handleAction}
-    tabindex="0"
-  >...</div>
-`
-
-// Handler:
-private _handleAction(ev: ActionHandlerEvent): void {
-  handleAction(this, this.hass, this.config, ev.detail.action);
-}
-```
-
-| Gesture       | Activated by                             |
-| ------------- | ---------------------------------------- |
-| Tap           | Release before the hold threshold        |
-| Hold          | Press held for 500 ms                    |
-| Hold + repeat | Fires every `repeat` ms while held       |
-| Double tap    | Two taps within 250 ms                   |
-| Keyboard      | Enter or Space triggers tap              |
-
-### Adding a new language
-
-1. Copy `src/localize/languages/en.json` to `src/localize/languages/<lang>.json`.
-2. Translate the values (keep all keys identical).
-3. Import and register the new translations in `src/localize/localize.ts`.
-
-### Contributing
-
-1. Fork the repository and create a feature branch from `master`.
-2. Run `yarn build` before opening a PR — all lint checks must pass.
-3. Keep PRs focused on a single change.
-4. Code style is enforced automatically by Prettier and ESLint on build.
+Full toolchain details and architecture notes live in
+[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md).
 
 ---
 
-## Troubleshooting
+## See also
 
-**Card not appearing after install**
-Clear your browser cache or do a hard reload (`Ctrl+Shift+R` / `Cmd+Shift+R`).
-
-**`TypeError: Class constructor cannot be invoked without 'new'`**
-Your bundler is transpiling Lit's class syntax down to ES5. Ensure `rollup.config.js` has `terser({ ecma: 2020 })` and `typescript({ compilerOptions: { target: 'ES2022' } })`.
-
-**Visual editor not opening**
-Check the browser console for import errors from the dynamic `import('./editor')` in `getConfigElement`. Also confirm the `boilerplate-card-editor` custom element tag matches what `getConfigElement` creates.
-
-**Card stuck on skeleton / not rendering**
-`shouldUpdate` may be returning `false` before `hass` is ready. The safest implementation for a single entity is:
-```typescript
-protected shouldUpdate(changedProps: PropertyValues): boolean {
-  if (!this.config) return false;
-  return changedProps.has('config') || changedProps.has('hass');
-}
-```
-
-**General Lovelace plugin troubleshooting**
-See the [thomasloven wiki][troubleshooting].
+- [`nredd/hacs-storz-bickel`](https://github.com/nredd/hacs-storz-bickel) — the Home Assistant
+  integration this card is a companion to (BLE connection, entities, session tracking).
 
 ---
 
-[commits-shield]: https://img.shields.io/github/commit-activity/y/custom-cards/boilerplate-card.svg?style=for-the-badge
-[commits]: https://github.com/custom-cards/boilerplate-card/commits/master
-[license-shield]: https://img.shields.io/github/license/custom-cards/boilerplate-card.svg?style=for-the-badge
-[releases-shield]: https://img.shields.io/github/release/custom-cards/boilerplate-card.svg?style=for-the-badge
-[releases]: https://github.com/custom-cards/boilerplate-card/releases
-[troubleshooting]: https://github.com/thomasloven/hass-config/wiki/Lovelace-Plugins
+[commits-shield]: https://img.shields.io/github/commit-activity/y/nredd/hacs-storz-bickel-card.svg?style=for-the-badge
+[commits]: https://github.com/nredd/hacs-storz-bickel-card/commits/master
+[license-shield]: https://img.shields.io/github/license/nredd/hacs-storz-bickel-card.svg?style=for-the-badge
+[releases-shield]: https://img.shields.io/github/release/nredd/hacs-storz-bickel-card.svg?style=for-the-badge
+[releases]: https://github.com/nredd/hacs-storz-bickel-card/releases

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# script/lint-check: Check TypeScript lint/format without changes
+#
+# Runs Biome in CI mode (lint + format verification, no writes). To apply
+# fixes locally, use script/lint.
+#
+# Usage:
+#   ./script/lint-check
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR/.."
+
+# shellcheck source=script/.lib/output.sh
+source "$SCRIPT_DIR/.lib/output.sh"
+
+require_bun
+
+log_header "Checking TypeScript with Biome"
+bunx biome ci .
+
+log_success "Lint check completed"

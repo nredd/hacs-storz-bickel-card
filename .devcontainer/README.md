@@ -1,6 +1,7 @@
 # Home Assistant Custom Card - Dev Container Setup
 
-This directory contains the development container configuration for building and testing the boilerplate-card custom card for Home Assistant.
+This directory contains the development container configuration for building and testing the
+`storz-bickel-card` custom card for Home Assistant.
 
 ## Setup Instructions
 
@@ -15,27 +16,29 @@ This directory contains the development container configuration for building and
 
 3. **Build the Card**
    ```bash
-   yarn build      # Lint and build
-   yarn start      # Start dev server with hot reload (port 5000)
-   yarn lint       # Check code quality
-   yarn rollup     # Production build
+   bun run build   # Production build (minified)
+   bun run dev     # Watch-mode build with hot reload
+   bun run serve   # Static server on port 5000
+   bun run lint    # Check code quality
    ```
 
 4. **Access Services**
    - **Dev Container**: Terminal in VS Code (automatic)
    - **Home Assistant**: http://localhost:8123 (user: dev/pass: dev)
-   - **Rollup Dev Server**: http://localhost:5000
+   - **Dev Server**: http://localhost:5000
 
 5. **Configure Home Assistant to Use Your Card**
+   - The card auto-loads via `LOVELACE_REMOTE_FILES` — no manual resource registration needed
    - In Home Assistant, go to Settings > Dashboards
    - Create a new Dashboard
-   - Add the card from the GUI
+   - Add the card from the GUI (search **Storz & Bickel Card**)
 
 ## File Structure
 
 ```
 .devcontainer/
 ├── devcontainer.json    # VS Code dev container config
+├── config/              # Bind-mounted Home Assistant config directory
 ├── .gitignore          # Ignore HA data
 └── README.md           # This file
 ```
@@ -46,7 +49,9 @@ This project uses the published image:
 
 - `ghcr.io/custom-cards/custom-card-devcontainer:latest`
 
-The image includes the `container` helper used by the devcontainer lifecycle commands.
+The image includes the `container` helper used by the devcontainer lifecycle commands. The Bun
+feature (`ghcr.io/shyim/devcontainers-features/bun:0`) is added on top, pinned to match
+`.bun-version`.
 
 ## Development Workflow
 
@@ -54,24 +59,29 @@ The image includes the `container` helper used by the devcontainer lifecycle com
 
 ```bash
 # One-time setup (automatic on container creation)
-yarn install
+bun install --frozen-lockfile
 
 # Development with hot reload
-yarn start              # Runs Rollup in watch mode on port 5000
+bun run dev              # Watch-mode build
+bun run serve            # Static server on port 5000 (pair with `dev` above)
 
 # Quality checks
-yarn lint             # ESLint check
-yarn build            # Full build pipeline (lint + rollup)
+bun run lint             # Biome check
+bun run check             # tsc --noEmit
+bun test                  # bun test --coverage
 
 # Production build
-yarn rollup           # Create optimized dist files
+bun run build             # Minified dist/storz-bickel-card.js
 ```
+
+`script/check` runs the full CI gate (lint-check + type-check + test) in one command.
 
 ### File Locations
 
 - **Source Code**: `src/`
-- **Built Output**: `dist/` (inside container)
-- **Configuration**: Root directory (`tsconfig.json`, `rollup.config.js`, etc.)
+- **Built Output**: `dist/` (inside container, bind-mounted to `/config/www/workspace` as a
+  fallback path alongside `LOVELACE_REMOTE_FILES`)
+- **Configuration**: Root directory (`tsconfig.json`, `biome.json`, `bunfig.toml`, etc.)
 
 ## Troubleshooting
 
@@ -92,7 +102,7 @@ lsof -i :8123
 ```bash
 # Clear and reinstall dependencies
 rm -rf node_modules
-yarn install
+bun install --frozen-lockfile
 ```
 
 ## Additional Resources
@@ -100,21 +110,21 @@ yarn install
 - [Home Assistant Custom Card Development](https://developers.home-assistant.io/docs/frontend/custom-ui/custom-card/)
 - [VS Code Dev Containers Docs](https://code.visualstudio.com/docs/remote/containers)
 - [Lit Documentation](https://lit.dev/)
-- [Material Design Web Components](https://github.com/material-components/material-web)
+- [Bun Documentation](https://bun.sh/docs)
+- [Biome Documentation](https://biomejs.dev/)
 
 ## Environment Details
 
-- **Node.js**: 24
-- **TypeScript**: 5.9.3
-- **Build Tool**: Rollup 4.20
-- **Linter**: ESLint 9 + TypeScript Support
-- **Code Formatter**: Prettier 3.8
-- **Web Framework**: Lit 3.2
+- **Bun**: 1.3.14 (pinned in `.bun-version`)
+- **TypeScript**: 6.0.x (strict, `tsc --noEmit`)
+- **Bundler**: `bun build`
+- **Linter/Formatter**: Biome 2.5.x
+- **Web Framework**: Lit 3.3
 - **Home Assistant Image**: Latest (optional)
 
 ## Notes
 
-- The container runs as non-root user `nodejs` for security
+- The container runs as non-root user `vscode` for security
 - Volume mounts use `cached` consistency mode for better performance on Mac/Windows
-- All Yarn commands run inside the container automatically
-- VS Code extensions are configured for TypeScript and YAML development
+- All Bun commands run inside the container automatically
+- VS Code extensions are configured for TypeScript, Biome, and YAML development
