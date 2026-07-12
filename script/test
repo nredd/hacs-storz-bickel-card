@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# script/test: Run the unit tests with bun test
+#
+# Executes the Jest-compatible bun test runner against test/ (happy-dom
+# provides the DOM) and prints a coverage summary.
+#
+# Usage:
+#   ./script/test [BUN_TEST_OPTIONS]
+#
+# Examples:
+#   ./script/test
+#   ./script/test --watch
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR/.."
+
+# shellcheck source=script/.lib/output.sh
+source "$SCRIPT_DIR/.lib/output.sh"
+
+require_bun
+
+log_header "Running tests"
+bun test --coverage "$@"
+
+log_success "Tests completed"

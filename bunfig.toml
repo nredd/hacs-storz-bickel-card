@@ -1,0 +1,5 @@
+# Bun configuration for the card workspace.
+
+[test]
+# Register happy-dom globals (window, document, customElements, …) before tests.
+preload = ["./test/setup.ts"]

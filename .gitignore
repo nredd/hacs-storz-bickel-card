@@ -1,6 +1,6 @@
-/node_modules/
-/.rpt2_cache/
-/dist
+node_modules/
+coverage/
+/dist/
 homeassistant/
 .devcontainer/config/.storage/
 .devcontainer/config/tts/
@@ -11,4 +11,3 @@ homeassistant/
 .devcontainer/config/.HA_VERSION
 .devcontainer/config/known_devices.yaml
 .devcontainer/config/.ha_run.lock
-.yarn/

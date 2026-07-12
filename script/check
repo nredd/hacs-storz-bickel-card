@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# script/check: Full CI gate — lint, types, tests
+#
+# Mirrors what CI runs on every push/PR:
+#   lint-check    Biome lint + format verification (no writes)
+#   type-check    Strict tsc --noEmit
+#   test          bun test with coverage
+#
+# Usage:
+#   ./script/check
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR/.."
+
+# shellcheck source=script/.lib/output.sh
+source "$SCRIPT_DIR/.lib/output.sh"
+
+require_bun
+
+"$SCRIPT_DIR/lint-check"
+echo ""
+"$SCRIPT_DIR/type-check"
+echo ""
+"$SCRIPT_DIR/test"
+echo ""
+
+log_success "Check passed"
