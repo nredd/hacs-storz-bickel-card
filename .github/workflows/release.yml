@@ -8,21 +8,20 @@ jobs:
   release:
     name: Prepare release
     runs-on: ubuntu-latest
-    env:
-      COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: '24'
+          bun-version-file: .bun-version
 
       - name: Validate release tag is semver
         run: |
+          set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
 
-          node -e "const version = process.env.VERSION; const semverRegex = /^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$/; if (!semverRegex.test(version)) { console.error(`Invalid release tag '${process.env.GITHUB_REF_NAME}'. Expected semver like '1.2.3' or 'v1.2.3'.`); process.exit(1); }"
+          bun -e "const version = process.env.VERSION; const semverRegex = /^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$/; if (!semverRegex.test(version)) { console.error(\`Invalid release tag '\${process.env.GITHUB_REF_NAME}'. Expected semver like '1.2.3' or 'v1.2.3'.\`); process.exit(1); }"
 
           echo "Release tag is valid semver: $VERSION"
         env:
@@ -30,21 +29,24 @@ jobs:
 
       - name: Bump versions from release tag
         run: |
+          set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
           echo "Using release version: $VERSION"
 
-          node -e "const fs=require('fs');const version=process.env.VERSION;const pkgPath='package.json';const pkg=JSON.parse(fs.readFileSync(pkgPath,'utf8'));pkg.version=version;fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');"
+          bun -e "const fs=require('fs');const version=process.env.VERSION;const pkgPath='package.json';const pkg=JSON.parse(fs.readFileSync(pkgPath,'utf8'));pkg.version=version;fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');"
 
-          sed -i "s/^export const CARD_VERSION = '.*';$/export const CARD_VERSION = '$VERSION';/" src/const.ts
+          # src/const.ts uses double-quoted strings (Biome style), not single quotes.
+          sed -i "s/^export const CARD_VERSION = \".*\";\$/export const CARD_VERSION = \"$VERSION\";/" src/const.ts
         env:
           VERSION: ${{ github.ref_name }}
 
       - name: Validate bumped versions
         run: |
+          set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
 
-          PKG_VERSION=$(node -p "require('./package.json').version")
-          CONST_VERSION=$(sed -n "s/^export const CARD_VERSION = '\(.*\)';$/\1/p" src/const.ts)
+          PKG_VERSION=$(bun -p "require('./package.json').version")
+          CONST_VERSION=$(sed -n "s/^export const CARD_VERSION = \"\(.*\)\";\$/\1/p" src/const.ts)
 
           [ "$PKG_VERSION" = "$VERSION" ] || {
             echo "package.json version mismatch: expected '$VERSION', got '$PKG_VERSION'"
@@ -57,23 +59,22 @@ jobs:
           }
 
           echo "Version validation passed: $VERSION"
+        env:
+          VERSION: ${{ github.ref_name }}
 
       # Build
       - name: Install dependencies
-        run: |
-          corepack enable
-          corepack prepare yarn@4.12.0 --activate
-          yarn install --immutable
+        run: bun install --frozen-lockfile
 
       - name: Build the file
-        run: yarn build
+        run: bun run build
 
       # Upload build artifact to the release as an asset.
       - name: Upload release asset
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/boilerplate-card.js
-          asset_name: boilerplate-card.js
+          file: dist/storz-bickel-card.js
+          asset_name: storz-bickel-card.js
           tag: ${{ github.ref }}
           overwrite: true
