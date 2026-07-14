@@ -2,15 +2,32 @@
  * `<storz-bickel-card-editor>` — visual config editor for the card.
  *
  * A single `<ha-form>` (provided by the HA frontend at runtime) with a device
- * selector scoped to the integration, an optional name, and three optional
- * preset temperature boxes that flatten to/from the card's `presets` array.
+ * selector scoped to the integration, an optional name, and the five effect
+ * options ported from the design prototype's props (heat/ember, air/wind,
+ * idle breeze).
  */
 
 import { html, LitElement, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
-import type { CardConfig, HomeAssistant } from "./types";
+import { ensureFonts } from "./fonts";
+import type {
+  AirEffect,
+  CardConfig,
+  EmberIntensity,
+  HeatEffect,
+  HomeAssistant,
+  WindIntensity,
+} from "./types";
+import { DEFAULT_EFFECTS } from "./view-model";
 
-const PRESET_FIELDS = ["preset_1", "preset_2", "preset_3"] as const;
+const HEAT_EFFECTS: HeatEffect[] = ["Embers + glow", "Embers only", "Glow only", "Off"];
+const EMBER_INTENSITIES: EmberIntensity[] = ["Smolder", "Steady", "Inferno"];
+const AIR_EFFECTS: AirEffect[] = ["Streaks + glow", "Streaks only", "Glow only", "Off"];
+const WIND_INTENSITIES: WindIntensity[] = ["Breeze", "Steady", "Gale"];
+
+function selectOptions(options: string[]) {
+  return options.map((option) => ({ value: option, label: option }));
+}
 
 const SCHEMA = [
   {
@@ -19,18 +36,33 @@ const SCHEMA = [
     selector: { device: { integration: "storz_bickel" } },
   },
   { name: "name", selector: { text: {} } },
-  ...PRESET_FIELDS.map((name) => ({
-    name,
-    selector: { number: { mode: "box", step: 1 } },
-  })),
+  {
+    name: "heat_effect",
+    selector: { select: { mode: "dropdown", options: selectOptions(HEAT_EFFECTS) } },
+  },
+  {
+    name: "ember_intensity",
+    selector: { select: { mode: "dropdown", options: selectOptions(EMBER_INTENSITIES) } },
+  },
+  {
+    name: "air_effect",
+    selector: { select: { mode: "dropdown", options: selectOptions(AIR_EFFECTS) } },
+  },
+  {
+    name: "wind_intensity",
+    selector: { select: { mode: "dropdown", options: selectOptions(WIND_INTENSITIES) } },
+  },
+  { name: "idle_breeze", selector: { boolean: {} } },
 ];
 
 const LABELS: Record<string, string> = {
   device: "Device",
   name: "Name (optional)",
-  preset_1: "Preset 1",
-  preset_2: "Preset 2",
-  preset_3: "Preset 3",
+  heat_effect: "HEAT button effect",
+  ember_intensity: "Ember intensity",
+  air_effect: "AIR button effect",
+  wind_intensity: "Wind intensity",
+  idle_breeze: "Idle breeze while pump is off",
 };
 
 /** Visual editor backing `getConfigElement()`. */
@@ -40,19 +72,25 @@ export class StorzBickelCardEditor extends LitElement {
 
   @state() private config?: CardConfig;
 
+  override connectedCallback(): void {
+    super.connectedCallback();
+    ensureFonts();
+  }
+
   /** Lovelace: store the configuration being edited. */
   setConfig(config: CardConfig): void {
     this.config = config;
   }
 
   private get formData(): Record<string, unknown> {
-    const presets = this.config?.presets ?? [];
     return {
       device: this.config?.device ?? "",
       name: this.config?.name,
-      preset_1: presets[0],
-      preset_2: presets[1],
-      preset_3: presets[2],
+      heat_effect: this.config?.heat_effect ?? DEFAULT_EFFECTS.heatEffect,
+      ember_intensity: this.config?.ember_intensity ?? DEFAULT_EFFECTS.emberIntensity,
+      air_effect: this.config?.air_effect ?? DEFAULT_EFFECTS.airEffect,
+      wind_intensity: this.config?.wind_intensity ?? DEFAULT_EFFECTS.windIntensity,
+      idle_breeze: this.config?.idle_breeze ?? DEFAULT_EFFECTS.idleBreeze,
     };
   }
 
@@ -62,9 +100,6 @@ export class StorzBickelCardEditor extends LitElement {
       return;
     }
     const value = event.detail.value;
-    const presets = PRESET_FIELDS.map((field) => value[field]).filter(
-      (preset): preset is number => typeof preset === "number" && Number.isFinite(preset),
-    );
     const config: CardConfig = {
       type: this.config.type,
       device: typeof value.device === "string" ? value.device : "",
@@ -72,8 +107,30 @@ export class StorzBickelCardEditor extends LitElement {
     if (typeof value.name === "string" && value.name !== "") {
       config.name = value.name;
     }
-    if (presets.length > 0) {
-      config.presets = presets;
+    const heatEffect = value.heat_effect as HeatEffect;
+    if (HEAT_EFFECTS.includes(heatEffect) && heatEffect !== DEFAULT_EFFECTS.heatEffect) {
+      config.heat_effect = heatEffect;
+    }
+    const emberIntensity = value.ember_intensity as EmberIntensity;
+    if (
+      EMBER_INTENSITIES.includes(emberIntensity) &&
+      emberIntensity !== DEFAULT_EFFECTS.emberIntensity
+    ) {
+      config.ember_intensity = emberIntensity;
+    }
+    const airEffect = value.air_effect as AirEffect;
+    if (AIR_EFFECTS.includes(airEffect) && airEffect !== DEFAULT_EFFECTS.airEffect) {
+      config.air_effect = airEffect;
+    }
+    const windIntensity = value.wind_intensity as WindIntensity;
+    if (
+      WIND_INTENSITIES.includes(windIntensity) &&
+      windIntensity !== DEFAULT_EFFECTS.windIntensity
+    ) {
+      config.wind_intensity = windIntensity;
+    }
+    if (value.idle_breeze === true) {
+      config.idle_breeze = true;
     }
     this.dispatchEvent(
       new CustomEvent("config-changed", { detail: { config }, bubbles: true, composed: true }),

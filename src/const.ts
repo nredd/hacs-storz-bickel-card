@@ -9,20 +9,15 @@ export const CARD_TAG = "storz-bickel-card";
 /** Custom element tag for the visual config editor. */
 export const EDITOR_TAG = "storz-bickel-card-editor";
 
-/** Custom element tag for the temperature dial subcomponent. */
-export const DIAL_TAG = "sb-temp-dial";
-
-/** Custom element tag for the dual seven-segment temperature readout. */
-export const SEVEN_SEGMENT_TAG = "sb-seven-segment";
-
-/** Custom element tag for the temperature history line chart. */
-export const HISTORY_CHART_TAG = "sb-history-chart";
-
-/** Custom element tag for the sessions-per-day bar chart. */
-export const SESSIONS_CHART_TAG = "sb-sessions-chart";
-
 /** Integration domain whose entities the card binds to. */
 export const INTEGRATION_DOMAIN = "storz_bickel";
 
-/** Default preset temperatures offered by the stub config. */
-export const DEFAULT_PRESETS = [175, 185, 195];
+/** id of the @font-face <style> injected into document.head (dedupe key). */
+export const FONT_STYLE_ID = "storz-bickel-card-fonts";
+
+/**
+ * Fixed internal layout width, px: the design prototype's 1400px shell minus
+ * its 72px decorative sidebar. The card always lays out at this width and is
+ * scaled uniformly (transform: scale) to fit its container.
+ */
+export const DESIGN_WIDTH = 1328;

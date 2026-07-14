@@ -20,6 +20,7 @@
     "build": "NODE_ENV=production bun build src/storz-bickel-card.ts --outfile=dist/storz-bickel-card.js --minify --format=esm --target=browser",
     "dev": "bun build src/storz-bickel-card.ts --outfile=dist/storz-bickel-card.js --format=esm --target=browser --watch",
     "serve": "bun run script/dev-server.ts",
+    "generate:fonts": "bun run script/generate-fonts.ts",
     "check": "tsc --noEmit",
     "lint": "biome ci .",
     "lint:fix": "biome check --write .",
@@ -30,6 +31,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.2",
+    "@fontsource/dseg7-classic": "5.2.5",
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
     "@happy-dom/global-registrator": "^20.10.6",
     "@types/bun": "^1.3.14",
     "typescript": "^6.0.3"

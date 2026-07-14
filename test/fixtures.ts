@@ -13,7 +13,10 @@ interface ServiceCall {
 
 export interface FakeHass extends HomeAssistant {
   serviceCalls: ServiceCall[];
-  /** Canned response for the next `callApi` call, settable by tests. */
+  /**
+   * Canned `callApi` responses, matched by exact path first and then by
+   * prefix (history paths embed timestamps, so tests key on "history/period").
+   */
   apiResponses: Record<string, unknown>;
 }
 
@@ -93,6 +96,11 @@ export function makeHass(): FakeHass {
         "sensor.volcano_current_session_start",
         VOLCANO_DEVICE,
         "current_session_start",
+      ),
+      "sensor.volcano_current_session_duration": registryEntry(
+        "sensor.volcano_current_session_duration",
+        VOLCANO_DEVICE,
+        "current_session_duration",
       ),
       "sensor.volcano_session_history": registryEntry(
         "sensor.volcano_session_history",
@@ -182,6 +190,10 @@ export function makeHass(): FakeHass {
         "sensor.volcano_current_session_start",
         "2026-07-09T14:30:00+00:00",
       ),
+      "sensor.volcano_current_session_duration": entity(
+        "sensor.volcano_current_session_duration",
+        "754",
+      ),
       "sensor.volcano_session_history": entity("sensor.volcano_session_history", "6", {
         sessions: [],
         daily_counts: { "2026-07-09": 3, "2026-07-08": 2, "2026-07-07": 1 },
@@ -207,7 +219,12 @@ export function makeHass(): FakeHass {
       return Promise.resolve();
     },
     callApi<T>(_method: "GET" | "POST", path: string): Promise<T> {
-      return Promise.resolve((apiResponses[path] ?? []) as T);
+      const exact = apiResponses[path];
+      if (exact !== undefined) {
+        return Promise.resolve(exact as T);
+      }
+      const prefix = Object.keys(apiResponses).find((key) => path.startsWith(key));
+      return Promise.resolve((prefix !== undefined ? apiResponses[prefix] : []) as T);
     },
   };
 }

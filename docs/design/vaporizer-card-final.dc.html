@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@fontsource/dseg7-classic@5.2.5/400.css" rel="stylesheet">
+<style>
+body{margin:0;background:#0b0a08;font-family:'Inter',system-ui,sans-serif;}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 20px 0px rgba(255,106,61,0.25);}50%{box-shadow:0 0 42px 8px rgba(255,106,61,0.55);}}
+@keyframes windDrift{0%{transform:translateX(0);opacity:0;}12%{opacity:1;}80%{opacity:1;}100%{transform:translateX(340px);opacity:0;}}
+@keyframes airBreathe{0%,100%{box-shadow:0 6px 20px rgba(255,106,61,0.45);}50%{box-shadow:0 6px 34px rgba(255,106,61,0.8),0 0 18px rgba(255,106,61,0.35);}}
+@keyframes emberRise{0%{transform:translateY(0) scale(1);opacity:0;}18%{opacity:1;}100%{transform:translateY(-56px) scale(0.4);opacity:0;}}
+.hover-lift{transition:transform 0.15s ease, box-shadow 0.15s ease;}
+.hover-lift:hover{transform:translateY(-1px);}
+.tick{position:absolute;top:50%;left:50%;width:0;height:0;}
+.tick-inner{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;}
+</style>
+</helmet>
+
+<div style="width:1400px;background:#15130f;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);box-shadow:0 40px 90px rgba(0,0,0,0.55);display:flex;" data-screen-label="Vaporizer Card">
+  <div style="width:72px;background:#100e0b;border-right:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 0;">
+    <div style="width:36px;height:36px;border-radius:10px;background:#ff6a3d;color:#1a1207;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;font-family:'JetBrains Mono',monospace;">HA</div>
+    <div style="width:24px;height:1px;background:rgba(255,255,255,0.08);"></div>
+    <div style="width:6px;height:6px;border-radius:50%;background:#ff6a3d;box-shadow:0 0 8px rgba(255,106,61,0.7);"></div>
+  </div>
+
+  <div style="flex:1;padding:36px 40px 40px;display:flex;flex-direction:column;gap:26px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.16em;color:#6b6459;text-transform:uppercase;margin-bottom:6px;">Volcano Hybrid</div>
+        <div style="font-size:32px;font-weight:600;color:#f2ede4;letter-spacing:-0.01em;">Bag Bertha</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div title="Heat progress toward target" style="display:flex;flex-direction:column;align-items:center;gap:5px;">
+          <div style="display:flex;gap:6px;">
+            <sc-for list="{{v.ledStyles}}" as="led" hint-placeholder-count="5"><div style="{{led}}"></div></sc-for>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.12em;color:#6b6459;text-transform:uppercase;">Heat</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:#1c1a15;border:1px solid rgba(255,255,255,0.08);border-radius:100px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 8px rgba(52,211,153,0.6);"></div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.08em;color:#a39a8c;text-transform:uppercase;">Online</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:560px 1fr;gap:24px;align-items:start;">
+      <div style="background:linear-gradient(180deg,#1e1b16,#17140f);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:36px;display:flex;flex-direction:column;align-items:center;gap:22px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="background:#0d0b08;border-radius:8px;padding:12px 26px;box-shadow:inset 0 2px 8px rgba(0,0,0,0.8),0 0 0 1px rgba(255,255,255,0.05);display:flex;flex-direction:column;align-items:center;line-height:1;">
+            <div style="position:relative;font-family:'DSEG7 Classic',monospace;font-size:46px;font-weight:400;letter-spacing:0.01em;line-height:1;">
+              <div style="color:rgba(255,106,61,0.09);">888</div>
+              <div style="position:absolute;inset:0;text-align:right;color:#ff6a3d;text-shadow:0 0 18px rgba(255,106,61,0.6);">{{v.tempNum}}</div>
+            </div>
+            <div style="{{v.targetLineStyle}}">
+              <div style="{{v.targetGhostStyle}}">888</div>
+              <div style="{{v.targetDigitsStyle}}">{{v.targetNum}}</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;border:1px solid rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;">
+            <button onClick="{{v.onSetF}}" style="{{v.unitFStyle}}">°F</button>
+            <button onClick="{{v.onSetC}}" style="{{v.unitCStyle}}">°C</button>
+          </div>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;color:#6b6459;text-transform:uppercase;">{{v.statusLabel}}</div>
+
+        <div ref="{{v.knobRef}}" onMouseDown="{{v.onKnobDown}}" onTouchStart="{{v.onKnobDown}}" style="position:relative;width:280px;height:280px;display:flex;align-items:center;justify-content:center;cursor:grab;touch-action:none;">
+          <sc-for list="{{v.tickMarks}}" as="tm" hint-placeholder-count="5">
+            <div style="{{tm.outerStyle}}">
+              <div style="{{tm.dashStyle}}"></div>
+              <div style="{{tm.innerStyle}}"><span style="{{tm.labelStyle}}">{{tm.label}}</span></div>
+            </div>
+          </sc-for>
+
+          <div style="{{v.knobWrapperStyle}}">
+            <div style="{{v.knobStyle}}">
+              <div style="position:absolute;top:16px;left:50%;width:5px;height:36px;background:#ff6a3d;border-radius:3px;transform:translateX(-50%);box-shadow:0 0 10px rgba(255,106,61,0.85);"></div>
+            </div>
+            <div style="{{v.knobOverlayStyle}}"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:16px;background:#100e0b;border:1px solid rgba(255,255,255,0.07);border-radius:100px;padding:6px;">
+          <button onClick="{{v.onDec}}" style="width:44px;height:44px;border-radius:50%;background:#242019;border:1px solid rgba(255,255,255,0.1);color:#e8e2d4;font-size:19px;cursor:pointer;" class="hover-lift">−</button>
+          <div style="min-width:96px;text-align:center;">
+            <input value="{{v.targetFieldValue}}" onFocus="{{v.onTargetFocus}}" onChange="{{v.onTargetChange}}" onBlur="{{v.onTargetBlur}}" onKeyDown="{{v.onTargetKey}}" style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:#f2ede4;background:transparent;border:none;outline:none;text-align:center;width:96px;padding:0;cursor:text;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#6b6459;">{{v.step}}° STEP</div>
+          </div>
+          <button onClick="{{v.onInc}}" style="width:44px;height:44px;border-radius:50%;background:#242019;border:1px solid rgba(255,255,255,0.1);color:#e8e2d4;font-size:19px;cursor:pointer;" class="hover-lift">+</button>
+        </div>
+
+        <div style="display:flex;gap:12px;width:100%;">
+          <button onClick="{{v.onToggleHeat}}" style="{{v.heatBtnStyle}}" class="hover-lift">
+            <sc-for list="{{v.embers}}" as="em" hint-placeholder-count="0"><div style="{{em}}"></div></sc-for>
+            <span style="{{v.heatLabelStyle}}">{{v.heatBtnLabel}}</span>
+          </button>
+          <button onClick="{{v.onTogglePump}}" style="{{v.pumpBtnBigStyle}}" class="hover-lift">
+            <sc-for list="{{v.windStreaks}}" as="ws" hint-placeholder-count="0"><div style="{{ws}}"></div></sc-for>
+            <span style="{{v.pumpLabelStyle}}">{{v.pumpBtnLabel}}</span>
+          </button>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <div style="background:#1c1a15;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:24px 28px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;color:#6b6459;text-transform:uppercase;margin-bottom:8px;">Session</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:600;color:#f2ede4;">{{v.sessionDisplay}}</div>
+          </div>
+          <div style="display:flex;gap:28px;">
+            <div><div style="font-size:20px;font-weight:600;color:#f2ede4;">3</div><div style="font-size:11px;color:#6b6459;">sessions today</div></div>
+          </div>
+        </div>
+
+        <div style="background:#1c1a15;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:24px 28px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;color:#6b6459;text-transform:uppercase;">Temperature · live</div>
+              <select value="{{v.chartWindowMin}}" onChange="{{v.onChartWindow}}" style="{{v.fieldStyle}}">
+                <sc-for list="{{v.chartWindowOptions}}" as="opt" hint-placeholder-count="7"><option value="{{opt.value}}">{{opt.label}}</option></sc-for>
+              </select>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;color:#ff6a3d;">{{v.tempDisplay}}</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <div style="position:relative;width:38px;height:110px;">
+              <sc-for list="{{v.yTicks}}" as="yt" hint-placeholder-count="4">
+                <div style="{{yt.labelStyle}}">{{yt.label}}</div>
+              </sc-for>
+            </div>
+            <div style="position:relative;flex:1;height:110px;">
+              <sc-for list="{{v.yTicks}}" as="g" hint-placeholder-count="4">
+                <div style="{{g.gridStyle}}"></div>
+              </sc-for>
+              <svg width="100%" height="110" viewBox="0 0 560 110" preserveAspectRatio="none" style="position:absolute;inset:0;display:block;">
+                <defs>
+                  <linearGradient id="fillLive" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#ff6a3d" stop-opacity="0.35"></stop>
+                    <stop offset="100%" stop-color="#ff6a3d" stop-opacity="0"></stop>
+                  </linearGradient>
+                </defs>
+                <path d="{{v.liveAreaPath}}" fill="url(#fillLive)"></path>
+                <path d="{{v.livePath}}" fill="none" stroke="#ff6a3d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+              <div style="{{v.liveDotStyle}}"></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#6b6459;font-family:'JetBrains Mono',monospace;margin-top:6px;margin-left:46px;">
+            <sc-for list="{{v.chartXTicks}}" as="xt" hint-placeholder-count="4"><span>{{xt}}</span></sc-for>
+          </div>
+        </div>
+
+        <div style="background:#1c1a15;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:24px 28px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;color:#6b6459;text-transform:uppercase;">Sessions · {{v.sessionCount}} total · {{v.sessionWindowLabel}}</div>
+            <select value="{{v.sessionWindowH}}" onChange="{{v.onSessionWindow}}" style="{{v.fieldStyle}}">
+              <sc-for list="{{v.sessionWindowOptions}}" as="opt" hint-placeholder-count="6"><option value="{{opt.value}}">{{opt.label}}</option></sc-for>
+            </select>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <div style="position:relative;width:20px;height:70px;">
+              <sc-for list="{{v.sessionYTicks}}" as="yt" hint-placeholder-count="3">
+                <div style="{{yt.labelStyle}}">{{yt.label}}</div>
+              </sc-for>
+            </div>
+            <div style="position:relative;flex:1;height:70px;">
+              <sc-for list="{{v.sessionYTicks}}" as="g" hint-placeholder-count="3">
+                <div style="{{g.gridStyle}}"></div>
+              </sc-for>
+              <div style="position:absolute;inset:0;display:flex;align-items:flex-end;gap:2px;">
+                <sc-for list="{{v.sessionBars}}" as="bar" hint-placeholder-count="48">
+                  <div style="{{bar}}"></div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#6b6459;font-family:'JetBrains Mono',monospace;margin-top:8px;margin-left:28px;">
+            <sc-for list="{{v.sessionXTicks}}" as="xt" hint-placeholder-count="5"><span>{{xt}}</span></sc-for>
+          </div>
+        </div>
+
+        <div style="background:#1c1a15;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:24px 28px;display:flex;flex-direction:column;gap:14px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;color:#6b6459;text-transform:uppercase;">Device info</div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:#a39a8c;">Total runtime</span><span style="color:#f2ede4;font-family:'JetBrains Mono',monospace;">2,217.2 h</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:#a39a8c;">Firmware</span><span style="color:#f2ede4;font-family:'JetBrains Mono',monospace;">V01.02.00.00</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:#a39a8c;">Bluetooth firmware</span><span style="color:#f2ede4;font-family:'JetBrains Mono',monospace;">V01.00.00.00</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span style="color:#a39a8c;">Auto shutoff</span>
+            <select value="{{v.autoShutoff}}" onChange="{{v.onAutoShutoff}}" style="{{v.fieldStyle}}">
+              <sc-for list="{{v.autoShutoffOptions}}" as="opt" hint-placeholder-count="4"><option value="{{opt}}">{{opt}}</option></sc-for>
+            </select>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span style="color:#a39a8c;">Pump failsafe</span>
+            <select value="{{v.pumpFailsafe}}" onChange="{{v.onPumpFailsafe}}" style="{{v.fieldStyle}}">
+              <sc-for list="{{v.pumpFailsafeOptions}}" as="opt" hint-placeholder-count="5"><option value="{{opt}}">{{opt}}</option></sc-for>
+            </select>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;"><span style="color:#a39a8c;">Temp step</span>
+            <select value="{{v.step}}" onChange="{{v.onStep}}" style="{{v.fieldStyle}}">
+              <sc-for list="{{v.stepOptions}}" as="opt" hint-placeholder-count="5"><option value="{{opt}}">{{opt}}°{{v.unit}}</option></sc-for>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;airEffect&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Streaks + glow&quot;,&quot;options&quot;:[&quot;Streaks + glow&quot;,&quot;Streaks only&quot;,&quot;Glow only&quot;,&quot;Off&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;AIR button&quot;},&quot;windIntensity&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Steady&quot;,&quot;options&quot;:[&quot;Breeze&quot;,&quot;Steady&quot;,&quot;Gale&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;AIR button&quot;},&quot;idleBreeze&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;AIR button&quot;},&quot;heatEffect&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Embers + glow&quot;,&quot;options&quot;:[&quot;Embers + glow&quot;,&quot;Embers only&quot;,&quot;Glow only&quot;,&quot;Off&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;HEAT button&quot;},&quot;emberIntensity&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Steady&quot;,&quot;options&quot;:[&quot;Smolder&quot;,&quot;Steady&quot;,&quot;Inferno&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;HEAT button&quot;}}">
+
+class Component extends DCLogic {
+  state = {
+    temp: 158, target: 185, heating: true, pump: false, session: 754, unit: 'F',
+    history: [140,142,145,148,150,152,154,155,156,157,158],
+    autoShutoff: '30 min', pumpFailsafe: '30 sec',
+    chartWindowMin: 30, sessionWindowH: 24,
+    stepF: 10, stepC: 5,
+    targetDraft: null,
+  };
+
+  componentDidMount() {
+    // Backfill 240 min of demo history (1 sample/sec) so every chart window has data to show.
+    this.setState((s) => ({ history: this.seedHistory(s.temp) }));
+    this._t = setInterval(() => {
+      this.setState((s) => {
+        let temp = s.temp, session = s.session;
+        if (s.heating) {
+          session += 1;
+          if (temp < s.target) temp = Math.min(s.target, +(temp + 0.4).toFixed(1));
+        }
+        const history = s.history.concat([temp]).slice(-14400);
+        return { temp, session, history };
+      });
+    }, 1000);
+  }
+
+  // Synthetic-but-plausible 4h backlog: a few heat-up/hold/cool-down sessions, landing on the live temp.
+  seedHistory(endTemp) {
+    const total = 240 * 60;
+    const pts = new Array(total);
+    let temp = 78;
+    const sched = [
+      { start: total - 13500, end: total - 11700, tgt: 356 },
+      { start: total - 9200, end: total - 7700, tgt: 370 },
+      { start: total - 3900, end: total - 2600, tgt: 392 },
+    ];
+    for (let i = 0; i < total; i++) {
+      let tgt = 78;
+      for (const w of sched) if (i >= w.start && i < w.end) tgt = w.tgt;
+      if (temp < tgt) temp = Math.min(tgt, temp + 0.4);
+      else if (temp > tgt) temp = Math.max(tgt, temp - (temp - 78) * 0.0012);
+      pts[i] = +temp.toFixed(1);
+    }
+    const rampLen = 600;
+    const from = pts[total - rampLen - 1];
+    for (let i = 0; i < rampLen; i++) {
+      const f = (i + 1) / rampLen;
+      pts[total - rampLen + i] = +(from + (endTemp - from) * f).toFixed(1);
+    }
+    return pts;
+  }
+  componentWillUnmount() { clearInterval(this._t); this.handleDragEnd(); }
+
+  knobRef = React.createRef();
+
+  toggleHeat() { this.setState((s) => ({ heating: !s.heating })); }
+  togglePump() { this.setState((s) => ({ pump: !s.pump })); }
+  nudgeTarget(dir) {
+    this.setState((s) => {
+      const stepF = s.unit === 'C' ? Math.round(s.stepC * 9 / 5) : s.stepF;
+      return { target: Math.max(104, Math.min(446, s.target + dir * stepF)) };
+    });
+  }
+  setUnit(u) { this.setState({ unit: u }); }
+  commitTarget() {
+    this.setState((s) => {
+      const v = parseFloat(s.targetDraft);
+      if (isNaN(v)) return { targetDraft: null };
+      const f = s.unit === 'C' ? v * 9 / 5 + 32 : v;
+      return { target: Math.max(104, Math.min(446, Math.round(f))), targetDraft: null };
+    });
+  }
+
+  startDrag(e) {
+    e.preventDefault();
+    this._dragging = true;
+    const p = e.touches ? e.touches[0] : e;
+    this.updateFromClient(p.clientX, p.clientY);
+    window.addEventListener('mousemove', this.handleDragMove);
+    window.addEventListener('mouseup', this.handleDragEnd);
+    window.addEventListener('touchmove', this.handleDragMove, { passive: false });
+    window.addEventListener('touchend', this.handleDragEnd);
+  }
+  handleDragMove = (e) => {
+    if (!this._dragging) return;
+    e.preventDefault();
+    const p = e.touches ? e.touches[0] : e;
+    this.updateFromClient(p.clientX, p.clientY);
+  };
+  handleDragEnd = () => {
+    this._dragging = false;
+    window.removeEventListener('mousemove', this.handleDragMove);
+    window.removeEventListener('mouseup', this.handleDragEnd);
+    window.removeEventListener('touchmove', this.handleDragMove);
+    window.removeEventListener('touchend', this.handleDragEnd);
+  };
+  updateFromClient(clientX, clientY) {
+    const el = this.knobRef && this.knobRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = clientX - cx, dy = clientY - cy;
+    let angle = (Math.atan2(dy, dx) * 180) / Math.PI + 90;
+    if (angle > 180) angle -= 360;
+    if (angle < -180) angle += 360;
+    if (angle > 150 && angle <= 180) angle = 150;
+    if (angle < -150 && angle >= -180) angle = -150;
+    const pct = (angle + 150) / 300;
+    const target = Math.round((104 + pct * 342) / 5) * 5;
+    this.setState({ target: Math.max(104, Math.min(446, target)), heating: true });
+  }
+
+  formatTime(sec) {
+    const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }
+  toDisplayTemp(f, unit) {
+    return unit === 'C' ? Math.round((f - 32) * 5 / 9) : Math.round(f);
+  }
+
+  niceAxis(lo, hi) {
+    if (!(hi > lo)) hi = lo + 1;
+    const rawStep = (hi - lo) / 4;
+    const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    const norm = rawStep / mag;
+    const mult = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10;
+    const step = mult * mag;
+    const niceLo = Math.floor(lo / step) * step;
+    const niceHi = Math.ceil(hi / step) * step;
+    const ticks = [];
+    for (let t = niceLo; t <= niceHi + step * 0.001; t += step) ticks.push(Math.round(t));
+    return { niceLo, niceHi, ticks };
+  }
+
+  smoothPath(values, w, h, min, max) {
+    const n = values.length;
+    if (n < 2) return '';
+    const pts = values.map((v, i) => {
+      const x = (i / (n - 1)) * w;
+      const y = h - ((v - min) / (max - min)) * h;
+      return [x, y];
+    });
+    let d = 'M' + pts[0][0].toFixed(1) + ',' + pts[0][1].toFixed(1);
+    for (let i = 1; i < pts.length; i++) {
+      const mx = (pts[i - 1][0] + pts[i][0]) / 2;
+      const my = (pts[i - 1][1] + pts[i][1]) / 2;
+      d += ' Q' + pts[i - 1][0].toFixed(1) + ',' + pts[i - 1][1].toFixed(1) + ' ' + mx.toFixed(1) + ',' + my.toFixed(1);
+    }
+    d += ' L' + pts[pts.length - 1][0].toFixed(1) + ',' + pts[pts.length - 1][1].toFixed(1);
+    return d;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const progress = Math.max(0, Math.min(1, s.temp / s.target));
+    const accent = '#ff6a3d';
+
+    const bigBtn = { border: 'none', borderRadius: '100px', padding: '16px 0', fontSize: '14px', fontWeight: 700, letterSpacing: '0.08em', cursor: 'pointer', fontFamily: "'Inter',sans-serif" };
+    const heatEffect = this.props.heatEffect ?? 'Embers + glow';
+    const emberIntensity = this.props.emberIntensity ?? 'Steady';
+    const wantEmbers = heatEffect === 'Embers + glow' || heatEffect === 'Embers only';
+    const wantHeatGlow = heatEffect === 'Embers + glow' || heatEffect === 'Glow only';
+    const holding = s.heating && s.temp >= s.target;
+    const emberConf = { 'Smolder': { n: 5, dur: 3.6 }, 'Steady': { n: 9, dur: 2.4 }, 'Inferno': { n: 16, dur: 1.3 } }[emberIntensity] || { n: 9, dur: 2.4 };
+    const embers = [];
+    if (wantEmbers && s.heating) {
+      const calm = holding ? 1.6 : 1; // settle down once target is reached
+      for (let i = 0; i < emberConf.n; i++) {
+        const left = 6 + ((i * 41) % 88);
+        const size = 2 + ((i * 13) % 3);
+        const dur = emberConf.dur * calm * (0.7 + ((i * 59) % 45) / 100);
+        const delay = -(((i * 83) % 100) / 100) * dur;
+        embers.push({
+          position: 'absolute', bottom: '-6px', left: left + '%', width: size + 'px', height: size + 'px', borderRadius: '50%',
+          background: 'rgba(255,236,200,0.9)',
+          boxShadow: '0 0 6px rgba(255,220,160,0.8)',
+          animation: 'emberRise ' + dur.toFixed(2) + 's ease-out infinite',
+          animationDelay: delay.toFixed(2) + 's',
+          pointerEvents: 'none',
+        });
+      }
+    }
+    const heatBtnStyle = s.heating
+      ? { ...bigBtn, flex: '1 1 0', background: accent, color: '#1a1207', boxShadow: '0 6px 20px rgba(255,106,61,0.45)', position: 'relative', overflow: 'hidden', animation: wantHeatGlow && !holding ? 'pulseGlow 2s ease-in-out infinite' : 'none' }
+      : { ...bigBtn, flex: '1 1 0', background: '#242019', color: '#e8e2d4', position: 'relative', overflow: 'hidden' };
+    const heatLabelStyle = { position: 'relative' };
+    const airEffect = this.props.airEffect ?? 'Streaks + glow';
+    const windIntensity = this.props.windIntensity ?? 'Steady';
+    const idleBreeze = this.props.idleBreeze ?? false;
+    const wantStreaks = airEffect === 'Streaks + glow' || airEffect === 'Streaks only';
+    const wantGlow = airEffect === 'Streaks + glow' || airEffect === 'Glow only';
+    const showStreaks = wantStreaks && (s.pump || idleBreeze);
+    const conf = { 'Breeze': { n: 4, dur: 3.4 }, 'Steady': { n: 7, dur: 2.2 }, 'Gale': { n: 12, dur: 1.25 } }[windIntensity] || { n: 7, dur: 2.2 };
+    const windStreaks = [];
+    if (showStreaks) {
+      for (let i = 0; i < conf.n; i++) {
+        const top = 12 + ((i * 37) % 74);
+        const dur = conf.dur * (0.7 + ((i * 53) % 40) / 100);
+        const delay = -(((i * 71) % 100) / 100) * dur;
+        const w = 26 + ((i * 29) % 36);
+        windStreaks.push({
+          position: 'absolute', top: top + '%', left: '-70px', width: w + 'px', height: '2px', borderRadius: '2px',
+          background: s.pump
+            ? 'linear-gradient(90deg, rgba(26,18,7,0), rgba(26,18,7,0.45), rgba(26,18,7,0))'
+            : 'linear-gradient(90deg, rgba(255,106,61,0), rgba(255,106,61,0.35), rgba(255,106,61,0))',
+          animation: 'windDrift ' + dur.toFixed(2) + 's linear infinite',
+          animationDelay: delay.toFixed(2) + 's',
+          pointerEvents: 'none',
+        });
+      }
+    }
+    const pumpBtnBigStyle = s.pump
+      ? { ...bigBtn, flex: '1 1 0', background: accent, color: '#1a1207', boxShadow: '0 6px 20px rgba(255,106,61,0.45)', position: 'relative', overflow: 'hidden', animation: wantGlow ? 'airBreathe 2.2s ease-in-out infinite' : 'none' }
+      : { ...bigBtn, flex: '1 1 0', background: '#242019', color: '#e8e2d4', border: '1px solid rgba(255,255,255,0.1)', position: 'relative', overflow: 'hidden' };
+    const pumpLabelStyle = {
+      position: 'relative',
+      letterSpacing: s.pump ? '0.26em' : '0.08em',
+      marginRight: s.pump ? '-0.26em' : '-0.08em',
+      transition: 'letter-spacing 0.6s cubic-bezier(0.22,1,0.36,1), margin-right 0.6s cubic-bezier(0.22,1,0.36,1)',
+    };
+
+    const unitBase = { border: 'none', padding: '8px 12px', fontSize: '12px', fontFamily: "'JetBrains Mono',monospace", cursor: 'pointer' };
+    const unitFStyle = s.unit === 'F' ? { ...unitBase, background: accent, color: '#1a1207' } : { ...unitBase, background: '#242019', color: '#a39a8c' };
+    const unitCStyle = s.unit === 'C' ? { ...unitBase, background: accent, color: '#1a1207' } : { ...unitBase, background: '#242019', color: '#a39a8c' };
+
+    const minT = 104, maxT = 446;
+    const sweep = 300, startA = -150;
+    const targetPct = (s.target - minT) / (maxT - minT);
+    const knobRotation = startA + targetPct * sweep;
+    const tickMarks = [];
+    for (let a = -150; a <= 150; a += 12.5) {
+      const isMajor = (a + 150) % 75 === 0;
+      const outerStyle = { position: 'absolute', top: '50%', left: '50%', width: 0, height: 0, transform: 'translate(-50%,-50%) rotate(' + a + 'deg)' };
+      if (!isMajor) {
+        tickMarks.push({
+          label: '',
+          outerStyle,
+          dashStyle: { position: 'absolute', left: '-0.5px', top: '-124px', width: '1px', height: '7px', borderRadius: '0.5px', background: 'rgba(255,255,255,0.22)' },
+          innerStyle: { display: 'none' },
+          labelStyle: {},
+        });
+        continue;
+      }
+      const tf = minT + ((a - startA) / sweep) * (maxT - minT);
+      const label = this.toDisplayTemp(tf, s.unit) + '°' + s.unit;
+      const rad = a * Math.PI / 180;
+      // Push the label center out so its nearest EDGE keeps constant clearance from the tick,
+      // accounting for the label's width/height at this angle (like a real printed dial face).
+      const halfW = label.length * 3.1, halfH = 5;
+      const rc = 134 + halfW * Math.abs(Math.sin(rad)) + halfH * Math.abs(Math.cos(rad));
+      tickMarks.push({
+        label,
+        outerStyle,
+        dashStyle: { position: 'absolute', left: '-1px', top: '-128px', width: '2px', height: '13px', borderRadius: '1px', background: 'rgba(255,255,255,0.55)' },
+        innerStyle: { position: 'absolute', left: 0, top: -rc + 'px', display: 'flex', transform: 'translate(-50%,-50%) rotate(' + (-a) + 'deg)' },
+        labelStyle: { fontFamily: "'JetBrains Mono',monospace", fontSize: '10px', color: '#6b6459', whiteSpace: 'nowrap' },
+      });
+    }
+    const knobWrapperStyle = {
+      width: '190px', height: '190px', borderRadius: '50%', position: 'relative',
+      background: '#0e0c09',
+      boxShadow: '0 16px 34px rgba(0,0,0,0.55), 0 3px 6px rgba(0,0,0,0.4)',
+    };
+    const knobStyle = {
+      width: '100%', height: '100%', borderRadius: '50%',
+      background: 'radial-gradient(circle at 50% 30%, #433c31 0%, #211d17 58%, #16130e 100%)',
+      position: 'absolute', inset: 0, transform: 'rotate(' + knobRotation + 'deg)', transition: 'transform 0.6s ease',
+    };
+    const knobOverlayStyle = {
+      position: 'absolute', inset: 0, borderRadius: '50%', pointerEvents: 'none',
+      boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 3px 5px rgba(255,255,255,0.05), inset 0 -12px 24px rgba(0,0,0,0.5)',
+    };
+
+    const litCount = Math.round(progress * 5);
+    const ledStyles = [0, 1, 2, 3, 4].map((i) => ({
+      width: '9px', height: '9px', borderRadius: '50%',
+      background: i < litCount ? accent : '#2a2620',
+      boxShadow: i < litCount ? '0 0 8px rgba(255,106,61,0.8)' : 'none',
+    }));
+
+    const pumpBtnStyle = s.pump
+      ? { background: accent, color: '#1a1207', border: 'none', borderRadius: '100px', padding: '8px 16px', fontSize: '12px', fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, letterSpacing: '0.03em', cursor: 'pointer', boxShadow: '0 4px 14px rgba(255,106,61,0.4)', whiteSpace: 'nowrap' }
+      : { background: '#242019', color: '#e8e2d4', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '100px', padding: '8px 16px', fontSize: '12px', fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, letterSpacing: '0.03em', cursor: 'pointer', whiteSpace: 'nowrap' };
+
+    // Demo session bars: 48 buckets spanning the selected window, generated
+    // deterministically per window so changing the range re-buckets the data.
+    const swH = s.sessionWindowH;
+    const bucketMin = (swH * 60) / 48;
+    const demo = Array.from({ length: 48 }, (_, i) => {
+      const r = (((i * 73 + swH * 131) * 9301 + 49297) % 233280) / 233280;
+      const chance = Math.min(0.4, 0.05 + swH * 0.004);
+      if (r > chance) return 0;
+      const r2 = (((i * 137 + swH * 61) * 9301 + 49297) % 233280) / 233280;
+      return Math.round(2 + r2 * Math.min(bucketMin, 18));
+    });
+    const maxBucket = Math.max(...demo, 1);
+    const sessionCount = demo.filter((v) => v > 0).length;
+    const sessionAxis = this.niceAxis(0, maxBucket);
+    const sAxisMax = sessionAxis.niceHi;
+    const sessionYTicks = sessionAxis.ticks.map((t) => {
+      const top = (1 - t / sAxisMax) * 70;
+      return {
+        label: String(t),
+        labelStyle: { position: 'absolute', top: top + 'px', right: '4px', transform: 'translateY(-50%)', fontFamily: "'JetBrains Mono',monospace", fontSize: '9px', color: '#6b6459' },
+        gridStyle: { position: 'absolute', left: 0, right: 0, top: top + 'px', height: '1px', background: 'rgba(255,255,255,0.05)' },
+      };
+    });
+    const sessionBars = demo.map((val, i) => {
+      const isNow = i === demo.length - 1;
+      const h = val === 0 ? 3 : Math.max(6, (val / sAxisMax) * 100);
+      return {
+        flex: 1, height: h + '%', borderRadius: '2px',
+        background: val === 0 ? '#242019' : (isNow ? accent : '#c85a35'),
+        boxShadow: val > 0 && isNow ? '0 0 8px rgba(255,106,61,0.6)' : 'none',
+      };
+    });
+
+    // Slice the backlog to the selected live window, then downsample for a clean path.
+    const winLen = Math.min(s.history.length, s.chartWindowMin * 60);
+    let series = s.history.slice(-winLen);
+    if (series.length > 140) {
+      const stride = Math.ceil(series.length / 140);
+      series = series.filter((_, i) => i % stride === 0 || i === series.length - 1);
+    }
+    const dataLo = Math.min(...series);
+    const dataHi = Math.max(...series);
+    const pad = Math.max(4, (dataHi - dataLo) * 0.15);
+    const axis = this.niceAxis(dataLo - pad, dataHi + pad);
+    const aMin = axis.niceLo, aMax = axis.niceHi;
+    const livePath = this.smoothPath(series, 560, 110, aMin, aMax);
+    const liveAreaPath = livePath ? livePath + ' L560,110 L0,110 Z' : '';
+    const yTicks = axis.ticks.map((t) => {
+      const frac = (t - aMin) / (aMax - aMin);
+      const top = (1 - frac) * 110;
+      return {
+        label: this.toDisplayTemp(t, s.unit) + '°',
+        labelStyle: { position: 'absolute', top: top + 'px', right: '6px', transform: 'translateY(-50%)', fontFamily: "'JetBrains Mono',monospace", fontSize: '9px', color: '#6b6459', whiteSpace: 'nowrap' },
+        gridStyle: { position: 'absolute', left: 0, right: 0, top: top + 'px', height: '1px', background: 'rgba(255,255,255,0.05)' },
+      };
+    });
+    const lastVal = series[series.length - 1];
+    const lastFrac = (lastVal - aMin) / (aMax - aMin);
+    const liveDotStyle = {
+      position: 'absolute', top: ((1 - lastFrac) * 110) + 'px', right: '0', transform: 'translate(50%,-50%)',
+      width: '9px', height: '9px', borderRadius: '50%', background: '#ff6a3d',
+      boxShadow: '0 0 0 3px rgba(255,106,61,0.18), 0 0 10px rgba(255,106,61,0.7)',
+    };
+    const cw = s.chartWindowMin;
+    const chartXTicks = ['−' + cw + ' min', '−' + Math.round(cw * 2 / 3), '−' + Math.round(cw / 3), 'now'];
+
+    const sw = s.sessionWindowH;
+    const sessionXTicks = sw <= 12
+      ? ['−' + sw + 'h', '−' + Math.round(sw * 3 / 4) + 'h', '−' + Math.round(sw / 2) + 'h', '−' + Math.round(sw / 4) + 'h', 'now']
+      : ['−' + sw + 'h', '−' + Math.round(sw * 3 / 4) + 'h', '−' + Math.round(sw / 2) + 'h', '−' + Math.round(sw / 4) + 'h', 'now'];
+    const sessionWindowLabel = sw + 'h';
+
+    const targetLineStyle = {
+      position: 'relative', fontFamily: "'DSEG7 Classic',monospace", fontSize: '46px', fontWeight: 400,
+      letterSpacing: '0.01em', marginTop: '4px', lineHeight: 1,
+    };
+    const targetGhostStyle = { color: s.heating ? 'rgba(242,237,228,0.08)' : 'rgba(58,53,44,0.35)' };
+    const targetDigitsStyle = {
+      position: 'absolute', inset: 0, textAlign: 'right',
+      color: s.heating ? '#f2ede4' : '#3a352c',
+      textShadow: s.heating ? '0 0 12px rgba(255,255,255,0.25)' : 'none',
+    };
+
+    const dTemp = this.toDisplayTemp(s.temp, s.unit);
+    const dTarget = this.toDisplayTemp(s.target, s.unit);
+    const stepLabel = s.unit === 'C' ? s.stepC + '°C' : s.stepF + '°F';
+
+    return { v: {
+      tempDisplay: dTemp + '°' + s.unit,
+      targetDisplay: dTarget + '°' + s.unit,
+      targetFieldValue: s.targetDraft != null ? s.targetDraft : dTarget + '°' + s.unit,
+      onTargetFocus: (e) => { const el = e.target; this.setState({ targetDraft: String(dTarget) }, () => el.select()); },
+      onTargetChange: (e) => this.setState({ targetDraft: e.target.value }),
+      onTargetBlur: () => this.commitTarget(),
+      onTargetKey: (e) => { if (e.key === 'Enter') e.target.blur(); else if (e.key === 'Escape') { this.setState({ targetDraft: null }, () => e.target.blur()); } },
+      heating: s.heating,
+      tempNum: dTemp,
+      targetNum: dTarget,
+      statusLabel: s.heating ? (s.temp >= s.target ? 'HOLDING' : 'HEATING') : 'IDLE',
+      pumpLabel: s.pump ? 'ON' : 'OFF',
+      pumpBtnLabel: 'AIR',
+      heatBtnLabel: 'HEAT',
+      sessionDisplay: this.formatTime(s.session),
+      stepLabel, tickMarks,
+      heatBtnStyle, pumpBtnStyle, pumpBtnBigStyle, windStreaks, pumpLabelStyle, embers, heatLabelStyle,
+      unitFStyle, unitCStyle,
+      knobStyle, knobWrapperStyle, knobOverlayStyle, knobRef: this.knobRef, ledStyles, sessionBars,
+      livePath, liveAreaPath, yTicks, liveDotStyle, chartXTicks, sessionCount, sessionYTicks,
+      targetLineStyle, targetGhostStyle, targetDigitsStyle,
+      chartWindowMin: s.chartWindowMin,
+      chartWindowOptions: [5, 10, 30, 60, 120, 180, 240].map((m) => ({ value: m, label: m + ' min' })),
+      onChartWindow: (e) => this.setState({ chartWindowMin: +e.target.value }),
+      sessionWindowH: s.sessionWindowH,
+      sessionWindowLabel,
+      sessionWindowOptions: [6, 12, 24, 36, 48, 72].map((h) => ({ value: h, label: h + ' h' })),
+      onSessionWindow: (e) => this.setState({ sessionWindowH: +e.target.value }),
+      sessionXTicks,
+      unit: s.unit,
+      step: s.unit === 'C' ? s.stepC : s.stepF,
+      stepOptions: s.unit === 'C' ? [1, 2, 5, 10] : [1, 2, 5, 10, 20],
+      onStep: (e) => this.setState(s.unit === 'C' ? { stepC: +e.target.value } : { stepF: +e.target.value }),
+      onToggleHeat: () => this.toggleHeat(),
+      onTogglePump: () => this.togglePump(),
+      onInc: () => this.nudgeTarget(1),
+      onDec: () => this.nudgeTarget(-1),
+      onSetF: () => this.setUnit('F'),
+      onSetC: () => this.setUnit('C'),
+      autoShutoff: s.autoShutoff,
+      pumpFailsafe: s.pumpFailsafe,
+      autoShutoffOptions: ['Off', '30 min', '40 min', '60 min'],
+      pumpFailsafeOptions: ['5 sec', '15 sec', '30 sec', '45 sec', '60 sec'],
+      fieldStyle: { background: '#242019', color: '#f2ede4', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '7px', padding: '5px 10px', fontSize: '12px', fontFamily: "'JetBrains Mono',monospace", cursor: 'pointer' },
+      onAutoShutoff: (e) => this.setState({ autoShutoff: e.target.value }),
+      onPumpFailsafe: (e) => this.setState({ pumpFailsafe: e.target.value }),
+      onKnobDown: (e) => this.startDrag(e),
+    } };
+  }
+}
+
+</script>
+</body>
+</html>

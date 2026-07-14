@@ -25,6 +25,7 @@ export interface DeviceEntityIds {
   autoShutoffMinutes?: string;
   boostTemperature?: string;
   currentSessionStart?: string;
+  currentSessionDuration?: string;
   sessionHistory?: string;
   totalSessions?: string;
   favoriteTemperature?: string;
@@ -57,6 +58,7 @@ export function deviceEntities(hass: HomeAssistant, deviceId: string): DeviceEnt
     autoShutoffMinutes: find("number", "auto_shutoff_minutes"),
     boostTemperature: find("number", "boost_temperature"),
     currentSessionStart: find("sensor", "current_session_start"),
+    currentSessionDuration: find("sensor", "current_session_duration"),
     sessionHistory: find("sensor", "session_history"),
     totalSessions: find("sensor", "total_sessions"),
     favoriteTemperature: find("sensor", "favorite_temperature"),

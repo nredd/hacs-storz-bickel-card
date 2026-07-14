@@ -16,6 +16,7 @@ describe("deviceEntities", () => {
   test("resolves session and device-info entities", () => {
     const ids = deviceEntities(makeHass(), VOLCANO_DEVICE);
     expect(ids.currentSessionStart).toBe("sensor.volcano_current_session_start");
+    expect(ids.currentSessionDuration).toBe("sensor.volcano_current_session_duration");
     expect(ids.sessionHistory).toBe("sensor.volcano_session_history");
     expect(ids.totalSessions).toBe("sensor.volcano_total_sessions");
     expect(ids.favoriteTemperature).toBe("sensor.volcano_favorite_temperature");

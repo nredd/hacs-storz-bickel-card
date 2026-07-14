@@ -1,5 +1,4 @@
 import { describe, expect, test } from "bun:test";
-import { DEFAULT_PRESETS } from "../src/const";
 import type { StorzBickelCardEditor } from "../src/editor";
 import { StorzBickelCard } from "../src/storz-bickel-card";
 import type { CardConfig } from "../src/types";
@@ -13,11 +12,28 @@ async function renderEditor(config: CardConfig): Promise<StorzBickelCardEditor> 
   return editor;
 }
 
+function emitValueChanged(editor: StorzBickelCardEditor, value: Record<string, unknown>) {
+  editor.shadowRoot?.querySelector("ha-form")?.dispatchEvent(
+    new CustomEvent("value-changed", {
+      detail: { value },
+      bubbles: true,
+      composed: true,
+    }),
+  );
+}
+
+function captureConfig(editor: StorzBickelCardEditor): () => CardConfig | undefined {
+  let received: CardConfig | undefined;
+  editor.addEventListener("config-changed", (event) => {
+    received = (event as CustomEvent<{ config: CardConfig }>).detail.config;
+  });
+  return () => received;
+}
+
 describe("getStubConfig", () => {
-  test("picks the first storz_bickel device and default presets", () => {
+  test("picks the first storz_bickel device", () => {
     const stub = StorzBickelCard.getStubConfig(makeHass());
     expect(stub.device).toBe(VOLCANO_DEVICE);
-    expect(stub.presets).toEqual(DEFAULT_PRESETS);
   });
 
   test("falls back to an empty device without hass", () => {
@@ -34,60 +50,65 @@ describe("getConfigElement", () => {
 });
 
 describe("editor round-trip", () => {
-  test("form values flatten back into a presets array", async () => {
+  test("non-default effect options are written to the config", async () => {
     const editor = await renderEditor({
       type: "custom:storz-bickel-card",
       device: VOLCANO_DEVICE,
-      presets: [175, 185],
     });
-    const form = editor.shadowRoot?.querySelector("ha-form");
-    expect(form).not.toBeNull();
+    expect(editor.shadowRoot?.querySelector("ha-form")).not.toBeNull();
+    const received = captureConfig(editor);
 
-    let received: CardConfig | undefined;
-    editor.addEventListener("config-changed", (event) => {
-      received = (event as CustomEvent<{ config: CardConfig }>).detail.config;
+    emitValueChanged(editor, {
+      device: VOLCANO_DEVICE,
+      name: "Bedside",
+      heat_effect: "Glow only",
+      ember_intensity: "Inferno",
+      air_effect: "Streaks only",
+      wind_intensity: "Gale",
+      idle_breeze: true,
     });
-    form?.dispatchEvent(
-      new CustomEvent("value-changed", {
-        detail: {
-          value: {
-            device: VOLCANO_DEVICE,
-            name: "Bedside",
-            preset_1: 170,
-            preset_2: 190,
-            preset_3: undefined,
-          },
-        },
-        bubbles: true,
-        composed: true,
-      }),
-    );
 
-    expect(received).toEqual({
+    expect(received()).toEqual({
       type: "custom:storz-bickel-card",
       device: VOLCANO_DEVICE,
       name: "Bedside",
-      presets: [170, 190],
+      heat_effect: "Glow only",
+      ember_intensity: "Inferno",
+      air_effect: "Streaks only",
+      wind_intensity: "Gale",
+      idle_breeze: true,
     });
   });
 
-  test("empty name and presets are omitted from the config", async () => {
+  test("defaults and empty name are omitted from the config", async () => {
+    const editor = await renderEditor({
+      type: "custom:storz-bickel-card",
+      device: VOLCANO_DEVICE,
+      heat_effect: "Off",
+    });
+    const received = captureConfig(editor);
+
+    emitValueChanged(editor, {
+      device: VOLCANO_DEVICE,
+      name: "",
+      heat_effect: "Embers + glow",
+      ember_intensity: "Steady",
+      air_effect: "Streaks + glow",
+      wind_intensity: "Steady",
+      idle_breeze: false,
+    });
+
+    expect(received()).toEqual({ type: "custom:storz-bickel-card", device: VOLCANO_DEVICE });
+  });
+
+  test("unknown effect values are dropped", async () => {
     const editor = await renderEditor({
       type: "custom:storz-bickel-card",
       device: VOLCANO_DEVICE,
     });
-    let received: CardConfig | undefined;
-    editor.addEventListener("config-changed", (event) => {
-      received = (event as CustomEvent<{ config: CardConfig }>).detail.config;
-    });
-    editor.shadowRoot?.querySelector("ha-form")?.dispatchEvent(
-      new CustomEvent("value-changed", {
-        detail: { value: { device: VOLCANO_DEVICE, name: "" } },
-        bubbles: true,
-        composed: true,
-      }),
-    );
-    expect(received).toEqual({ type: "custom:storz-bickel-card", device: VOLCANO_DEVICE });
+    const received = captureConfig(editor);
+    emitValueChanged(editor, { device: VOLCANO_DEVICE, heat_effect: "Lava lamp" });
+    expect(received()).toEqual({ type: "custom:storz-bickel-card", device: VOLCANO_DEVICE });
   });
 
   test("value-changed before setConfig is a no-op (config guard)", () => {
