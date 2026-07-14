@@ -205,6 +205,8 @@ describe("stepper", () => {
     const card = await renderCard(hass, config(VOLCANO_DEVICE));
     expect(card.shadowRoot?.textContent).toContain("5° INCREMENT"); // °C default
     const select = card.shadowRoot?.querySelector(".temp-step") as HTMLSelectElement;
+    const increments = [...select.querySelectorAll("option")].map((o) => o.getAttribute("value"));
+    expect(increments).toEqual(["1", "2", "5", "10", "15"]); // °C
     select.value = "2";
     select.dispatchEvent(new Event("change"));
     await card.updateComplete;
@@ -347,6 +349,11 @@ describe("unit toggle", () => {
       .map((el) => el.textContent?.trim())
       .filter((label) => label);
     expect(labels).toEqual(["104°F", "190°F", "275°F", "361°F", "446°F"]);
+    const stepSelect = card.shadowRoot?.querySelector(".temp-step") as HTMLSelectElement;
+    const increments = [...stepSelect.querySelectorAll("option")].map((o) =>
+      o.getAttribute("value"),
+    );
+    expect(increments).toEqual(["1", "2", "5", "10", "15", "20", "25"]); // °F
     expect(hass.serviceCalls).toHaveLength(0);
   });
 });
@@ -471,9 +478,14 @@ describe("device info", () => {
     const hass = makeHass();
     const card = await renderCard(hass, config(VOLCANO_DEVICE));
     const selects = [...(card.shadowRoot?.querySelectorAll("select") ?? [])] as HTMLSelectElement[];
-    // Order: chart window, session window, auto shutoff, pump failsafe, temp step.
+    // Order: chart window, session window, heater timeout, pump timeout,
+    // temperature increment.
     const failsafe = selects[3] as HTMLSelectElement;
     expect(failsafe.querySelector("option[selected]")?.getAttribute("value")).toBe("45");
+    const failsafeValues = [...failsafe.querySelectorAll("option")].map((o) =>
+      o.getAttribute("value"),
+    );
+    expect(failsafeValues.slice(0, 3)).toEqual(["5", "10", "15"]);
     failsafe.value = "90";
     failsafe.dispatchEvent(new Event("change"));
     expect(hass.serviceCalls).toEqual([

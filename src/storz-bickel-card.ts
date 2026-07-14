@@ -957,10 +957,10 @@ export class StorzBickelCard extends LitElement {
     const minuteOptions: SelectOption[] = [5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 360].map(
       (value) => ({ value, label: `${value} min` }),
     );
-    const failsafeOptions: SelectOption[] = [15, 30, 45, 60, 90, 120, 180, 300, 450, 600].map(
-      (value) => ({ value, label: `${value} sec` }),
-    );
-    const stepOptions = this.display === "C" ? [1, 2, 5, 10] : [1, 2, 5, 10, 20];
+    const failsafeOptions: SelectOption[] = [
+      5, 10, 15, 30, 45, 60, 90, 120, 180, 300, 450, 600,
+    ].map((value) => ({ value, label: `${value} sec` }));
+    const stepOptions = this.display === "C" ? [1, 2, 5, 10, 15] : [1, 2, 5, 10, 15, 20, 25];
     const step = this.display === "C" ? this.stepC : this.stepF;
 
     const valueRow = (label: string, value: string | undefined) => html`
