@@ -21,17 +21,24 @@ A custom Lovelace dashboard card for the
 
 ## Overview
 
-`custom:storz-bickel-card` is a two-column dashboard card for Storz & Bickel vaporizers (Volcano,
-Venty, Crafty): a dual current/target temperature readout with a °F/°C toggle, a rotating-knob
-thermostat dial (drag it, or use the −/+ stepper), preset chips, and HEAT/AIR toggle buttons on
-the left; a live session timer with today's session count, a temperature history chart, a
-sessions-per-day chart, and a device-info panel (runtime, firmware, and dropdowns for
-auto-shutoff, pump failsafe, pump cooldown, and temperature step) on the right. It reflows to a
-single column in narrow dashboard slots.
+`custom:storz-bickel-card` is a wide two-column dashboard card for Storz & Bickel vaporizers
+(Volcano, Venty, Crafty), a pixel-faithful port of its Claude Design prototype (vendored at
+[`docs/design/`](docs/design/)): a 7-segment LCD current/target readout (DSEG7) with a °F/°C
+toggle, a rotating-knob thermostat dial (drag it, use the −/+ stepper, or type a target), and
+HEAT/AIR buttons with ember/wind particle effects on the left; a live session timer with today's
+session count, a live temperature chart, a session-minutes bar chart, and a device-info panel
+(runtime, firmware, and dropdowns for auto-shutoff, pump failsafe, and temperature step) on the
+right.
 
-The card adapts to the configured device: the AIR toggle appears only on the Volcano, the battery
-chip only on portables, and boost/vibration rows only where supported. Entity lookups go through
-the registry, so renaming entities never breaks the card.
+The card lays out at a fixed 1328px design width and scales down/up **proportionally** to fit its
+dashboard slot — it never reflows or stacks vertically. In sections view it requests the full row
+(`columns: "full"`). All three fonts (Inter, JetBrains Mono, DSEG7 Classic) are bundled into the
+JS as data URLs, so the card renders identically with no internet access (~280 KB of the bundle,
+cached after first load).
+
+Entity lookups go through the registry, so renaming entities never breaks the card. Missing
+entities (e.g. no pump switch on portables) render as inert controls or `—` placeholders in the
+same slots — the layout never shifts.
 
 ---
 
@@ -66,26 +73,38 @@ resources:
 ## Configuration
 
 Open any dashboard, **Add card**, and search for **Storz & Bickel Card**. The visual editor lets
-you pick the device and preset temperatures; the equivalent YAML is:
+you pick the device and tune the button effects; the equivalent YAML is:
 
 ```yaml
 type: custom:storz-bickel-card
-device: <device_id>        # pick via the visual editor
-presets: [175, 185, 195]   # optional preset temperature chips
-name: Volcano               # optional title override
+device: <device_id>          # pick via the visual editor
+name: Bag Bertha             # optional title override
+heat_effect: Embers + glow   # optional effect options, defaults shown
+ember_intensity: Steady
+air_effect: Streaks + glow
+wind_intensity: Steady
+idle_breeze: false
 ```
 
-| Name       | Type    | Required     | Description                                | Default              |
-| ---------- | ------- | ------------ | ------------------------------------------- | --------------------- |
-| `type`     | string  | **Required** | `custom:storz-bickel-card`                  |                        |
-| `device`   | string  | **Required** | Device registry id of the Storz & Bickel device | `none` (editor-only) |
-| `presets`  | number[] | **Optional** | Preset temperature chips                   | `none`                 |
-| `name`     | string  | **Optional** | Card title override                        | Device name            |
+| Name              | Type    | Required     | Description                                                          | Default          |
+| ----------------- | ------- | ------------ | -------------------------------------------------------------------- | ---------------- |
+| `type`            | string  | **Required** | `custom:storz-bickel-card`                                            |                  |
+| `device`          | string  | **Required** | Device registry id of the Storz & Bickel device                       | `none`           |
+| `name`            | string  | Optional     | Card title override                                                   | Device name      |
+| `heat_effect`     | string  | Optional     | `Embers + glow` \| `Embers only` \| `Glow only` \| `Off`              | `Embers + glow`  |
+| `ember_intensity` | string  | Optional     | `Smolder` \| `Steady` \| `Inferno`                                    | `Steady`         |
+| `air_effect`      | string  | Optional     | `Streaks + glow` \| `Streaks only` \| `Glow only` \| `Off`            | `Streaks + glow` |
+| `wind_intensity`  | string  | Optional     | `Breeze` \| `Steady` \| `Gale`                                        | `Steady`         |
+| `idle_breeze`     | boolean | Optional     | Faint wind streaks on the AIR button while the pump is off            | `false`          |
 
-> **Reconnects on pump/step changes.** The pump failsafe, pump cooldown, and temperature-step
-> dropdowns in the device-info panel configure integration behavior (not the physical device), so
-> changing one reloads the integration's config entry — a brief BLE reconnect, the same as
-> changing them via the integration's own options flow.
+> **Breaking change:** the `presets` option (preset temperature chips) was removed in the port to
+> the final design, which has no preset row. Remove `presets:` from existing YAML configs.
+
+> **Reconnects on pump-timeout changes.** The "Pump timeout" dropdown in the device-info panel
+> configures integration behavior (not the physical device), so changing it reloads the
+> integration's config entry — a brief BLE reconnect, the same as changing it via the
+> integration's own options flow. The "Temperature increment" dropdown is card-local (it sets
+> the −/+ stepper increment).
 
 ---
 
@@ -125,15 +144,21 @@ above), or use the devcontainer where this is handled automatically.
 
 ### Available scripts
 
-| Command          | Description                                          |
-| ---------------- | ----------------------------------------------------- |
-| `bun run build`  | Production bundle (minified, ES module)                |
-| `bun run dev`    | Watch-mode build with hot reload                        |
-| `bun run serve`  | Static server on port 5000 (pair with `dev`)             |
-| `bun run lint`   | Biome lint + format check (CI mode)                       |
-| `bun run check`  | `tsc --noEmit`                                            |
-| `bun test`       | `bun test --coverage`                                      |
-| `script/check`   | Full CI gate: lint-check + type-check + test               |
+| Command                   | Description                                                    |
+| ------------------------- | -------------------------------------------------------------- |
+| `bun run build`           | Production bundle (minified, ES module)                         |
+| `bun run dev`             | Watch-mode build with hot reload                                |
+| `bun run serve`           | Static server on port 5000 (pair with `dev`; `PORT=` overrides) |
+| `bun run generate:fonts`  | Regenerate `src/font-data.gen.ts` from the @fontsource packages |
+| `bun run lint`            | Biome lint + format check (CI mode)                             |
+| `bun run check`           | `tsc --noEmit`                                                  |
+| `bun test`                | `bun test --coverage`                                           |
+| `script/check`            | Full CI gate: lint-check + type-check + test                    |
+
+With `bun run serve` running, `http://localhost:5000/preview` serves the card against a simulated
+Volcano (no HA needed) for side-by-side pixel comparison with the design prototype — open
+[`docs/design/vaporizer-card-final.dc.html`](docs/design/vaporizer-card-final.dc.html) next to it.
+The design source of truth and its code mapping live in [`docs/design/`](docs/design/).
 
 Full toolchain details and architecture notes live in
 [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md).

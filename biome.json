@@ -5,6 +5,9 @@
     "clientKind": "git",
     "useIgnoreFile": true
   },
+  "files": {
+    "includes": ["**", "!src/font-data.gen.ts", "!docs/design/*.dc.html"]
+  },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",

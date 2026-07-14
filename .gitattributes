@@ -11,6 +11,9 @@
 *.css text eol=lf
 *.html text eol=lf
 
+# Generated files — collapsed in diffs and language stats
+src/font-data.gen.ts linguist-generated=true -diff
+
 # Binary files — no line ending conversion
 *.png binary
 *.jpg binary
